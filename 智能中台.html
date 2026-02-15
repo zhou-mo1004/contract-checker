@@ -91,13 +91,10 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
   </div>
 </div>
 
-<script src="https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.min.js"></script>
-<script src="https://unpkg.com/mammoth@1.6.0/build/mammoth.browser.min.js"></script>
-
 <script>
 const API_KEY = "ALTAKsJVt9XKhuSyHM9uzqeEXv";
 const SECRET_KEY = "677e2573191347d0b3c62cdcd1af0141";
-const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+const CORS_PROXY = "https://crossorigin.workers.dev/?url=";
 
 const fileInput = document.getElementById("fileInput");
 const resultBox = document.getElementById("resultBox");
@@ -115,45 +112,55 @@ fileInput.addEventListener("change", async (e) => {
   resultText.innerHTML = '<span class="loading"></span> 正在读取：' + file.name;
 
   try {
-    const text = await extractText(file);
+    const text = await readAnyFile(file);
     resultText.innerHTML = '<span class="loading"></span> 读取成功，正在 AI 分析...';
     await analyzeContract(text);
   } catch (err) {
     resultText.innerText = "❌ 错误：" + err.message;
+    console.error(err);
   }
 });
 
-async function extractText(file) {
-  if (file.name.endsWith(".txt")) return await file.text();
+// 万能读取：TXT / PDF / DOCX
+async function readAnyFile(file) {
+  if (file.name.endsWith(".txt")) {
+    return await file.text();
+  }
 
   if (file.name.endsWith(".pdf")) {
+    const pdfjsLib = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs";
     const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
     let txt = "";
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const view = await page.getTextContent();
-      txt += view.items.map(p => p.str).join(" ") + "\n";
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      txt += content.items.map(p => p.str).join(" ") + "\n";
     }
     return txt;
   }
 
   if (file.name.endsWith(".docx")) {
+    const mammoth = await import("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/build/mammoth.browser.min.mjs");
     const buf = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer: buf });
-    return result.value;
+    const res = await mammoth.extractRawText({ arrayBuffer: buf });
+    return res.value;
   }
 
-  throw new Error("不支持此格式");
+  throw new Error("不支持此文件格式");
 }
 
+// 获取 access_token
 async function getToken() {
   const tokenUrl = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${API_KEY}&client_secret=${SECRET_KEY}`;
   const r = await fetch(CORS_PROXY + encodeURIComponent(tokenUrl));
   const d = await r.json();
+  if (!d.access_token) throw new Error("获取 access_token 失败：" + (d.error_description || "未知错误"));
   return d.access_token;
 }
 
+// AI 分析
 async function analyzeContract(text) {
   const token = await getToken();
   const prompt = `
@@ -183,6 +190,7 @@ ${text.slice(0, 8000)}
   });
 
   const data = await res.json();
+  if (data.error_code) throw new Error(`API 错误：${data.error_msg || "未知错误"}`);
   resultText.innerText = data.result || "分析失败";
 }
 </script>
