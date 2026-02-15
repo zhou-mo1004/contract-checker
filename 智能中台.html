@@ -91,9 +91,13 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
   </div>
 </div>
 
+<script src="https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.min.js"></script>
+<script src="https://unpkg.com/mammoth@1.6.0/build/mammoth.browser.min.js"></script>
+
 <script>
-// 我已帮你部署好的后端地址
-const BACKEND_URL = "https://contract-ai-api.vercel.app/review";
+const API_KEY = "ALTAKsJVt9XKhuSyHM9uzqeEXv";
+const SECRET_KEY = "677e2573191347d0b3c62cdcd1af0141";
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
 const fileInput = document.getElementById("fileInput");
 const resultBox = document.getElementById("resultBox");
@@ -108,28 +112,79 @@ fileInput.addEventListener("change", async (e) => {
   if (!file) return;
 
   resultBox.style.display = "block";
-  resultText.innerHTML = '<span class="loading"></span> 正在上传：' + file.name;
-
-  const formData = new FormData();
-  formData.append('file', file);
+  resultText.innerHTML = '<span class="loading"></span> 正在读取：' + file.name;
 
   try {
-    const response = await fetch(BACKEND_URL, {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      resultText.innerText = data.review_result;
-    } else {
-      resultText.innerText = "❌ 审查失败：" + data.error;
-    }
+    const text = await extractText(file);
+    resultText.innerHTML = '<span class="loading"></span> 读取成功，正在 AI 分析...';
+    await analyzeContract(text);
   } catch (err) {
-    resultText.innerText = "❌ 网络错误：" + err.message;
+    resultText.innerText = "❌ 错误：" + err.message;
   }
 });
+
+async function extractText(file) {
+  if (file.name.endsWith(".txt")) return await file.text();
+
+  if (file.name.endsWith(".pdf")) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    let txt = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const view = await page.getTextContent();
+      txt += view.items.map(p => p.str).join(" ") + "\n";
+    }
+    return txt;
+  }
+
+  if (file.name.endsWith(".docx")) {
+    const buf = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: buf });
+    return result.value;
+  }
+
+  throw new Error("不支持此格式");
+}
+
+async function getToken() {
+  const tokenUrl = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${API_KEY}&client_secret=${SECRET_KEY}`;
+  const r = await fetch(CORS_PROXY + encodeURIComponent(tokenUrl));
+  const d = await r.json();
+  return d.access_token;
+}
+
+async function analyzeContract(text) {
+  const token = await getToken();
+  const prompt = `
+请对合同进行完整审查，严格按4部分输出：
+
+【1】合同智能解析
+甲方、乙方、金额、日期、有效期、付款方式
+
+【2】财务自动对账
+应收金额、付款节点、发票风险、财务隐患
+
+【3】法务风险审查
+不公平条款、违约责任、争议解决、缺失条款
+
+【4】修改建议与优化
+具体修改意见 + 优化示例
+
+合同内容：
+${text.slice(0, 8000)}
+`;
+
+  const apiUrl = `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed?access_token=${token}`;
+  const res = await fetch(CORS_PROXY + encodeURIComponent(apiUrl), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: [{ role: "user", content: prompt }], temperature: 0.1 })
+  });
+
+  const data = await res.json();
+  resultText.innerText = data.result || "分析失败";
+}
 </script>
 </body>
 </html>
