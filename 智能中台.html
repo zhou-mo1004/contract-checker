@@ -1,4 +1,3 @@
-`html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -35,7 +34,6 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
 .result-content{line-height:1.8;color:#eee;white-space:pre-wrap;font-size:14px}
 .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#4fc3f7;animation:spin .8s linear infinite;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.error-message{color:#ff6b6b;padding:10px;background:rgba(255,107,107,.1);border-radius:8px;margin-top:10px}
 </style>
 </head>
 <body>
@@ -84,7 +82,7 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
 
   <div class="upload-area" onclick="triggerUpload()">
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx">
-    <div class="upload-text">✅ 点击这里上传合同（TXT / PDF / DOCX）</div>
+    <div class="upload-text">✅ 点击上传合同（TXT / PDF / DOCX）</div>
   </div>
 
   <div class="result-section" id="resultBox">
@@ -94,216 +92,93 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
 </div>
 
 <script>
-// ============ 你的百度千帆密钥（已正确配置）============
-const API_KEY = "ALTAKsJVt9XKhuSyHM9uzqeEXv";      // AccessKey ID
-const SECRET_KEY = "677e2573191347d0b3c62cdcd1af0141";  // AccessKey Secret
+const API_KEY     = "ALTAKsJVt9XKhuSyHM9uzqeEXv";
+const SECRET_KEY  = "677e2573191347d0b3c62cdcd1af0141";
 
-// ============ 全局变量 ============
 const fileInput = document.getElementById("fileInput");
 const resultBox = document.getElementById("resultBox");
 const resultText = document.getElementById("resultText");
 
-// 触发文件上传
 function triggerUpload() {
   fileInput.click();
 }
 
-// ============ 文件选择处理 ============
 fileInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  // 显示结果区域
   resultBox.style.display = "block";
-  resultText.innerHTML = `<span class="loading"></span> 正在读取：${file.name}`;
+  resultText.innerHTML = '<span class="loading"></span> 正在读取：' + file.name;
 
   try {
-    // 步骤1: 读取文件内容
-    const text = await readAnyFile(file);
-    resultText.innerHTML = '<span class="loading"></span> 读取成功，正在获取访问令牌...';
-    
-    // 步骤2: 获取 access_token
-    const token = await getAccessToken();
-    resultText.innerHTML = '<span class="loading"></span> 令牌获取成功，正在调用AI分析...';
-    
-    // 步骤3: 调用AI分析
-    await analyzeContract(text, token);
+    const text = await readFile(file);
+    resultText.innerHTML = '<span class="loading"></span> 正在 AI 分析...';
+    const aiResult = await callAI(text);
+    resultText.innerText = aiResult;
   } catch (err) {
-    // 显示详细错误信息
-    resultText.innerHTML = `
-      <div class="error-message">
-        ❌ 错误：${err.message}<br><br>
-        <small>请检查：<br>
-        1. 百度千帆平台是否已开通模型服务<br>
-        2. Access Key 是否有权限<br>
-        3. 控制台查看更多错误详情</small>
-      </div>
-    `;
-    console.error("完整错误信息:", err);
+    resultText.innerText = "❌ 错误：" + err.message;
   }
 });
 
-// ============ 文件读取函数 ============
-async function readAnyFile(file) {
-  const fileName = file.name.toLowerCase();
-  
-  // 读取TXT文件
-  if (fileName.endsWith(".txt")) {
+async function readFile(file) {
+  if (file.name.endsWith(".txt")) {
     return await file.text();
   }
 
-  // 读取PDF文件
-  if (fileName.endsWith(".pdf")) {
-    try {
-      // 动态加载PDF.js
-      const pdfjsLib = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs";
-      
-      const arrayBuffer = await file.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
-      const pdf = await loadingTask.promise;
-      
-      let fullText = "";
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(" ");
-        fullText += pageText + "\n";
-      }
-      return fullText;
-    } catch (error) {
-      throw new Error(`PDF读取失败: ${error.message}`);
+  if (file.name.endsWith(".pdf")) {
+    const pdf = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs");
+    pdf.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs";
+    const buf = await file.arrayBuffer();
+    const doc = await pdf.getDocument({ data: new Uint8Array(buf) }).promise;
+    let txt = "";
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      txt += content.items.map(p => p.str).join(" ") + "\n";
     }
+    return txt;
   }
 
-  // 读取DOCX文件
-  if (fileName.endsWith(".docx")) {
-    try {
-      // 动态加载mammoth.js
-      const mammoth = await import("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/build/mammoth.browser.min.mjs");
-      const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-      return result.value;
-    } catch (error) {
-      throw new Error(`Word读取失败: ${error.message}`);
-    }
+  if (file.name.endsWith(".docx")) {
+    const mammoth = await import("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/build/mammoth.browser.min.mjs");
+    const buf = await file.arrayBuffer();
+    const res = await mammoth.extractRawText({ arrayBuffer: buf });
+    return res.value;
   }
 
-  throw new Error("不支持的文件格式，请上传TXT、PDF或DOCX文件");
+  throw new Error("仅支持 .txt .pdf .docx");
 }
 
-// ============ 获取access_token（修复版）============
-async function getAccessToken() {
-  try {
-    // 使用直接的API地址，不用代理
-    const tokenUrl = "https://aip.baidubce.com/oauth/2.0/token";
-    const params = new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: API_KEY,
-      client_secret: SECRET_KEY
-    });
+async function callAI(text) {
+  const tokenResp = await fetch("https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + API_KEY + "&client_secret=" + SECRET_KEY);
+  const tokenData = await tokenResp.json();
+  const token = tokenData.access_token;
+  if (!token) throw new Error("获取token失败");
 
-    const response = await fetch(`${tokenUrl}?${params}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      }
-    });
-
-    const data = await response.json();
-    
-    if (data.error) {
-      throw new Error(`获取token失败: ${data.error_description || data.error}`);
-    }
-    
-    if (!data.access_token) {
-      throw new Error("获取token失败：返回数据中没有access_token");
-    }
-    
-    return data.access_token;
-  } catch (error) {
-    throw new Error(`认证失败: ${error.message}`);
-  }
-}
-
-// ============ AI分析函数（修复版）============
-async function analyzeContract(text, token) {
-  try {
-    // 准备提示词
-    const prompt = `请对以下合同进行完整审查，严格按照4个部分输出：
-
-【1】合同智能解析
-- 甲方： 
-- 乙方： 
-- 合同金额： 
-- 签订日期： 
-- 有效期： 
-- 付款方式：
-
-【2】财务自动对账
-- 应收金额：
-- 付款节点：
-- 发票要求：
-- 财务风险提示：
-
-【3】法务风险审查
-- 不公平条款：
-- 违约责任：
-- 争议解决方式：
-- 缺失的重要条款：
-
-【4】修改建议与优化
-- 具体修改意见：
-- 建议补充的条款：
-- 风险规避建议：
+  const resp = await fetch("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions?access_token=" + token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messages: [{
+        role: "user",
+        content: `你是合同审查助手，严格按以下结构分析：
+【1】合同主体
+【2】金额与日期
+【3】财务风险
+【4】法律风险
+【5】修改建议
 
 合同内容：
-${text.slice(0, 6000)}  // 限制长度避免超限
-`;
+${text.slice(0, 6000)}`
+      }],
+      stream: false
+    })
+  });
 
-    // 调用千帆API（使用ERNIE-Speed模型）
-    const apiUrl = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed";
-    
-    const response = await fetch(`${apiUrl}?access_token=${token}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.1,
-        top_p: 0.8
-      })
-    });
-
-    const data = await response.json();
-    
-    // 检查错误
-    if (data.error_code) {
-      throw new Error(`API错误 ${data.error_code}: ${data.error_msg}`);
-    }
-    
-    // 显示结果
-    if (data.result) {
-      resultText.innerText = data.result;
-    } else {
-      throw new Error("API返回数据格式异常");
-    }
-    
-  } catch (error) {
-    throw new Error(`AI分析失败: ${error.message}`);
-  }
+  const data = await resp.json();
+  if (data.error_code) throw new Error(data.error_msg || "AI调用失败");
+  return data.result;
 }
-
-// 暴露triggerUpload给全局（用于onclick）
-window.triggerUpload = triggerUpload;
 </script>
 </body>
 </html>
-```
