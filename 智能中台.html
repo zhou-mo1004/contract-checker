@@ -210,9 +210,9 @@ body {
   <div class="nav-container">
     <div class="logo">合同财务智能中台</div>
     <div class="nav-menu">
-      <a href="index.html">首页</a>
-      <a href="智能中台.html">智能中台</a>
-      <a href="联系我.html">联系我</a>
+      首页
+      智能中台
+      联系我
     </div>
   </div>
 </div>
@@ -223,4 +223,183 @@ body {
   <div class="card-grid">
     <div class="card" onclick="triggerUpload()">
       <div class="card-icon">📄</div>
-      <div class="card-title">1. 上传合同并解析</div>...
+      <div class="card-title">1. 上传合同并解析</div>
+      <div class="card-desc">支持 PDF / Word / TXT，自动提取文本</div>
+    </div>
+    <div class="card" onclick="scrollToSection('parse')">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">2. 合同智能解析</div>
+      <div class="card-desc">提取甲方、乙方、金额、日期等关键信息</div>
+    </div>
+    <div class="card" onclick="scrollToSection('finance')">
+      <div class="card-icon">💰</div>
+      <div class="card-title">3. 财务自动对账</div>
+      <div class="card-desc">生成应收应付台账，自动匹配付款计划</div>
+    </div>
+    <div class="card" onclick="scrollToSection('legal')">
+      <div class="card-icon">⚠️</div>
+      <div class="card-title">4. 法务风险审查</div>
+      <div class="card-desc">识别风险条款，提供修改建议</div>
+    </div>
+  </div>
+
+  <label class="upload-area" id="uploadLabel">
+    <input type="file" id="fileInput" accept=".txt,.pdf,.docx">
+    <div class="upload-text">点击或拖拽合同文件到这里上传（支持 TXT / PDF / DOCX）</div>
+  </label>
+
+  <div class="result-section" id="resultBox">
+    <div class="result-title">AI 合同审查结果</div>
+    <div class="result-content" id="resultText"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.min.js"></script>
+<script src="https://unpkg.com/mammoth@1.6.0/build/mammoth.browser.min.js"></script>
+
+<script>
+const API_KEY = "ALTAKsJVt9XKhuSyHM9uzqeEXv";
+const SECRET_KEY = "677e2573191347d0b3c62cdcd1af0141";
+
+const fileInput = document.getElementById("fileInput");
+const resultBox = document.getElementById("resultBox");
+const resultText = document.getElementById("resultText");
+const uploadLabel = document.getElementById("uploadLabel");
+
+// 触发文件选择
+function triggerUpload() {
+  fileInput.click();
+}
+
+// 滚动到对应区域
+function scrollToSection(id) {
+  if (id === 'parse' || id === 'finance' || id === 'legal') {
+    resultBox.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// 拖拽上传支持
+uploadLabel.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadLabel.style.borderColor = '#66d9ff';
+  uploadLabel.style.background = 'rgba(79,195,247,0.1)';
+});
+
+uploadLabel.addEventListener('dragleave', () => {
+  uploadLabel.style.borderColor = '#4fc3f7';
+  uploadLabel.style.background = 'rgba(255,255,255,0.05)';
+});
+
+uploadLabel.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadLabel.style.borderColor = '#4fc3f7';
+  uploadLabel.style.background = 'rgba(255,255,255,0.05)';
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleFile(files[0]);
+  }
+});
+
+// 文件上传监听
+fileInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (file) handleFile(file);
+});
+
+async function handleFile(file) {
+  resultBox.style.display = "block";
+  resultText.innerHTML = '<span class="loading"></span> 正在读取：' + file.name;
+
+  try {
+    const text = await extractText(file);
+    resultText.innerHTML = '<span class="loading"></span> 文件读取成功，正在调用 AI 深度审查...';
+    await doFullReview(text);
+  } catch (err) {
+    resultText.innerText = "❌ 错误：" + err.message;
+  }
+}
+
+// 提取文件文本
+async function extractText(file) {
+  if (file.name.endsWith(".txt")) return await file.text();
+  if (file.name.endsWith(".pdf")) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    let t = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      t += content.items.map(x => x.str).join(" ") + "\n";
+    }
+    return t;
+  }
+  if (file.name.endsWith(".docx")) {
+    const buf = await file.arrayBuffer();
+    const r = await mammoth.extractRawText({ arrayBuffer: buf });
+    return r.value;
+  }
+  throw new Error("不支持此文件格式");
+}
+
+// 获取百度千帆 access_token
+async function getToken() {
+  const r = await fetch(`https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${API_KEY}&client_secret=${SECRET_KEY}`);
+  const d = await r.json();
+  if (!d.access_token) throw new Error("获取 access_token 失败：" + (d.error_description || "未知错误"));
+  return d.access_token;
+}
+
+// 完整合同审查（四大功能）
+async function doFullReview(text) {
+  const token = await getToken();
+  const prompt = `
+你是专业的合同财务智能审查系统，请对以下合同进行深度审查，严格按4部分输出：
+
+【1】合同智能解析
+- 甲方主体
+- 乙方主体
+- 合同总金额
+- 签订日期
+- 合同有效期
+- 付款方式与节点
+
+【2】财务自动对账
+- 应收/应付金额
+- 预计到账/付款日期
+- 发票开具要求
+- 潜在财务风险（如付款条件过严、回款周期过长）
+
+【3】法务风险审查
+- 不公平条款（如单方免责、加重对方责任）
+- 违约责任是否对等
+- 争议解决方式是否合理
+- 保密、知识产权等条款是否缺失
+
+【4】修改建议与优化版本
+- 针对风险点的具体修改建议
+- 优化后的条款示例
+
+合同内容：
+${text.slice(0, 9000)}
+`;
+
+  try {
+    const res = await fetch(`https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed?access_token=${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1
+      })
+    });
+
+    const data = await res.json();
+    if (data.error_code) throw new Error(`API 错误：${data.error_msg || "未知错误"}`);
+    resultText.innerText = data.result;
+  } catch (err) {
+    resultText.innerText = "❌ AI 审查失败：" + err.message;
+  }
+}
+</script>
+</body>
+</html>
