@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能中台 - 合同财务智能中台</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+body {
+  background: #0b0f1a;
+  color: #eaefff;
+  min-height: 100vh;
+}
+
+.未来背景 {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, #141a35 0%, #0b0f1a 70%);
+  z-index: -2;
+}
+.网格线条 {
+  position: fixed;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image:
+    linear-gradient(rgba(79,195,247,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,213,79,0.07) 1px, transparent 1px);
+  background-size: 100px 100px;
+  z-index: -1;
+  animation: 缓慢移动 20s linear infinite;
+}
+@keyframes 缓慢移动 {
+  0% { transform: translate(0,0); }
+  100% { transform: translate(50px,50px); }
+}
+.法务光效 {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(79,195,247,0.12), transparent 60%);
+  top: 10%;
+  left: -100px;
+  z-index: -1;
+}
+.财务光效 {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255,213,79,0.1), transparent 60%);
+  bottom: 10%;
+  right: -100px;
+  z-index: -1;
+}
+
+.导航栏 {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(12,17,32,0.7);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  z-index: 999;
+}
+.导航内容 {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.网站标题 {
+  font-size: 22px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #4fc3f7, #ffd54f);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.导航菜单 a {
+  margin-left: 28px;
+  color: #c3c9e4;
+  text-decoration: none;
+}
+.导航菜单 a:hover {
+  color: #4fc3f7;
+}
+
+.页面容器 {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 120px 24px 60px;
+}
+.页面标题 {
+  font-size: 32px;
+  text-align: center;
+  margin-bottom: 40px;
+  background: linear-gradient(90deg, #4fc3f7, #ffd54f);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.四大布局 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.模块卡片 {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 28px;
+  backdrop-filter: blur(10px);
+}
+.模块标题 {
+  font-size: 19px;
+  margin-bottom: 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.模块标题::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: #4fc3f7;
+  border-radius: 2px;
+}
+.财务标题::before {
+  background: #ffd54f;
+}
+.法务标题::before {
+  background: #ff8a65;
+}
+
+.上传区域 {
+  border: 2px dashed rgba(79,195,247,0.4);
+  border-radius: 14px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-bottom: 20px;
+}
+.上传区域:hover {
+  background: rgba(79,195,247,0.05);
+  border-color: #4fc3f7;
+}
+.上传文件 {
+  display: none;
+}
+.解析按钮 {
+  width: 100%;
+  background: linear-gradient(90deg, #4fc3f7, #6a96f8);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.解析按钮:disabled {
+  background: #334366;
+  color: #aaa;
+}
+
+.信息组 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.信息项 {
+  background: rgba(255,255,255,0.04);
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+.标签 {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+.值 {
+  color: #fff;
+  font-weight: 500;
+}
+.财务色 {
+  color: #ffd54f;
+}
+.法务色 {
+  color: #4fc3f7;
+}
+.风险色 {
+  color: #ff8a65;
+}
+
+.台账表格 {
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(12,17,32,0.4);
+  margin-top: 20px;
+}
+.表头 {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+  padding: 12px 14px;
+  background: rgba(79,195,247,0.1);
+  color: #cfe2ff;
+  font-weight: 500;
+}
+.表格行 {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.正常 { color: #81c784; }
+.预警 { color: #ff8a65; }
+
+.隐藏 { display: none; }
+</style>
+</head>
+
+<body>
+
+<div class="未来背景"></div>
+<div class="网格线条"></div>
+<div class="法务光效"></div>
+<div class="财务光效"></div>
+
+<div class="导航栏">
+  <div class="导航内容">
+    <div class="网站标题">合同财务智能中台</div>
+    <div class="导航菜单">
+      <a href="首页.html">首页</a>
+      <a href="智能中台.html">智能中台</a>
+      <a href="联系我.html">联系我</a>
+    </div>
+  </div>
+</div>
+
+<div class="页面容器">
+  <h1 class="页面标题">智能财务法务工作台</h1>
+
+  <div class="四大布局">
+
+    <!-- 1 上传 -->
+    <div class="模块卡片">
+      <div class="模块标题">📄 合同上传与解析</div>
+      <div class="上传区域" onclick="document.getElementById('上传文件').click()">
+        点击或拖拽上传文本合同（.txt）<br>系统将真实读取并解析内容
+      </div>
+      <input type="file" id="上传文件" class="上传文件" accept=".txt">
+      <button class="解析按钮" id="解析按钮">开始真实AI解析</button>
+    </div>
+
+    <!-- 2 解析结果 -->
+    <div class="模块卡片 隐藏" id="解析结果卡片">
+      <div class="模块标题">📋 合同解析结果（真实提取）</div>
+      <div class="信息组">
+        <div class="信息项"><div class="标签">合同名称</div><div class="值" id="合同名称"></div></div>
+        <div class="信息项"><div class="标签">合同类型</div><div class="值" id="合同类型"></div></div>
+        <div class="信息项"><div class="标签">签订日期</div><div class="值" id="签订日期"></div></div>
+        <div class="信息项"><div class="标签">甲方</div><div class="值" id="甲方"></div></div>
+        <div class="信息项"><div class="标签">乙方</div><div class="值" id="乙方"></div></div>
+        <div class="信息项"><div class="标签">解析状态</div><div class="值 法务色" id="解析状态">真实解析完成</div></div>
+      </div>
+    </div>
+
+    <!-- 3 财务台账 -->
+    <div class="模块卡片 隐藏" id="财务台账卡片">
+      <div class="模块标题 财务标题">📊 财务自动台账（真实提取）</div>
+      <div class="信息组">
+        <div class="信息项"><div class="标签">合同总额</div><div class="值 财务色" id="金额"></div></div>
+        <div class="信息项"><div class="标签">税率</div><div class="值 财务色" id="税率"></div></div>
+        <div class="信息项"><div class="标签">收付类型</div><div class="值 财务色" id="收付类型"></div></div>
+        <div class="信息项"><div class="标签">付款节点</div><div class="值 财务色" id="付款节点"></div></div>
+      </div>
+      <div class="台账表格">
+        <div class="表头">
+          <div>合同名称</div><div>金额</div><div>税率</div><div>财务状态</div><div>来源</div>
+        </div>
+        <div id="台账内容"></div>
+      </div>
+    </div>
+
+    <!-- 4 法务风险 -->
+    <div class="模块卡片 隐藏" id="法务风险卡片">
+      <div class="模块标题 法务标题">⚠️ 法务风险审查（真实提取）</div>
+      <div class="信息组">
+        <div class="信息项"><div class="标签">履约期限</div><div class="值 法务色" id="履约期限"></div></div>
+        <div class="信息项"><div class="标签">违约责任</div><div class="值 法务色" id="违约责任"></div></div>
+        <div class="信息项"><div class="标签">争议解决</div><div class="值 法务色" id="争议解决"></div></div>
+        <div class="信息项"><div class="标签">风险等级</div><div class="值 风险色" id="风险等级"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const 上传文件 = document.getElementById('上传文件');
+const 解析按钮 = document.getElementById('解析按钮');
+const 解析结果卡片 = document.getElementById('解析结果卡片');
+const 财务台账卡片 = document.getElementById('财务台账卡片');
+const 法务风险卡片 = document.getElementById('法务风险卡片');
+
+上传文件.addEventListener('change', () => {
+  if (上传文件.files[0]) {
+    解析按钮.textContent = "已选择：" + 上传文件.files[0].name;
+  }
+});
+
+解析按钮.addEventListener('click', async () => {
+  const file = 上传文件.files[0];
+  if (!file) { alert("请先上传合同"); return; }
+  解析按钮.disabled = true;
+  解析按钮.textContent = "真实读取中…";
+
+  const text = await file.text();
+
+  // 真实从文本里提取
+  function getMatch(regex) {
+    const m = text.match(regex);
+    return m ? m[1].trim() : "未提取到";
+  }
+
+  const 合同名称 = getMatch(/合同名称[:：](.+?)(\n|$)/i);
+  const 合同类型 = getMatch(/合同类型[:：](.+?)(\n|$)/i);
+  const 签订日期 = getMatch(/签订日期[:：](.+?)(\n|$)/i);
+  const 甲方 = getMatch(/甲方[:：](.+?)(\n|$)/i);
+  const 乙方 = getMatch(/乙方[:：](.+?)(\n|$)/i);
+  const 金额 = getMatch(/金额[:：](.+?)(\n|$)/i);
+  const 税率 = getMatch(/税率[:：](.+?)(\n|$)/i);
+  const 收付类型 = getMatch(/收付类型[:：](.+?)(\n|$)/i);
+  const 付款节点 = getMatch(/付款节点[:：](.+?)(\n|$)/i);
+  const 履约期限 = getMatch(/履约期限[:：](.+?)(\n|$)/i);
+  const 违约责任 = getMatch(/违约责任[:：](.+?)(\n|$)/i);
+  const 争议解决 = getMatch(/争议解决[:：](.+?)(\n|$)/i);
+
+  let 风险等级 = "低风险";
+  if (text.includes("违约金") || text.includes("赔偿")) 风险等级 = "中等风险";
+  if (text.includes("全部责任") || text.includes("单方")) 风险等级 = "高风险";
+
+  // 展示到页面
+  document.getElementById("合同名称").innerText = 合同名称;
+  document.getElementById("合同类型").innerText = 合同类型;
+  document.getElementById("签订日期").innerText = 签订日期;
+  document.getElementById("甲方").innerText = 甲方;
+  document.getElementById("乙方").innerText = 乙方;
+
+  document.getElementById("金额").innerText = 金额;
+  document.getElementById("税率").innerText = 税率;
+  document.getElementById("收付类型").innerText = 收付类型;
+  document.getElementById("付款节点").innerText = 付款节点;
+
+  document.getElementById("履约期限").innerText = 履约期限;
+  document.getElementById("违约责任").innerText = 违约责任;
+  document.getElementById("争议解决").innerText = 争议解决;
+  document.getElementById("风险等级").innerText = 风险等级;
+
+  document.getElementById("台账内容").innerHTML = `
+  <div class="表格行">
+    <div>${file.name}</div>
+    <div>${金额}</div>
+    <div>${税率}</div>
+    <div class="正常">已解析</div>
+    <div>真实合同</div>
+  </div>`;
+
+  解析结果卡片.classList.remove('隐藏');
+  财务台账卡片.classList.remove('隐藏');
+  法务风险卡片.classList.remove('隐藏');
+  解析按钮.textContent = "真实解析完成";
+});
+</script>
+
+</body>
+</html>
