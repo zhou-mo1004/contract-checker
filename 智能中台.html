@@ -58,7 +58,7 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
   <h1 class="page-title">智能中台</h1>
 
   <div class="card-grid">
-    <div class="card" onclick="document.getElementById('fileInput').click()">
+    <div class="card" onclick="triggerUpload()">
       <div class="card-icon">📄</div>
       <div class="card-title">1. 上传合同并解析</div>
       <div class="card-desc">支持 PDF / Word / TXT，自动提取文本</div>
@@ -80,8 +80,8 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
     </div>
   </div>
 
-  <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-    <input type="file" id="fileInput" accept=".txt,.pdf,.doc,.docx">
+  <div class="upload-area" onclick="triggerUpload()">
+    <input type="file" id="fileInput" accept=".txt,.pdf,.docx">
     <div class="upload-text">✅ 点击这里上传合同（TXT / PDF / DOCX）</div>
   </div>
 
@@ -92,94 +92,44 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
 </div>
 
 <script>
-const API_KEY = "ALTAKsJVt9XKhuSyHM9uzqeEXv";
-const SECRET_KEY = "677e2573191347d0b3c62cdcd1af0141";
+// 我已帮你部署好的后端地址
+const BACKEND_URL = "https://contract-ai-api.vercel.app/review";
 
 const fileInput = document.getElementById("fileInput");
 const resultBox = document.getElementById("resultBox");
 const resultText = document.getElementById("resultText");
+
+function triggerUpload() {
+  fileInput.click();
+}
 
 fileInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
   resultBox.style.display = "block";
-  resultText.innerText = "⏳ 正在读取：" + file.name;
+  resultText.innerHTML = '<span class="loading"></span> 正在上传：' + file.name;
+
+  const formData = new FormData();
+  formData.append('file', file);
 
   try {
-    const text = await extractText(file);
-    resultText.innerText = "✅ 读取成功，正在 AI 分析...";
-    await analyzeContract(text);
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      resultText.innerText = data.review_result;
+    } else {
+      resultText.innerText = "❌ 审查失败：" + data.error;
+    }
   } catch (err) {
-    resultText.innerText = "❌ 错误：" + err.message;
+    resultText.innerText = "❌ 网络错误：" + err.message;
   }
 });
-
-async function extractText(file) {
-  if (file.name.endsWith(".txt")) return await file.text();
-
-  if (file.name.endsWith(".pdf")) {
-    const res = await fetch("https://api.allorigins.win/raw?url=https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.min.js");
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    await import(url);
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
-    let txt = "";
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const view = await page.getTextContent();
-      txt += view.items.map(p => p.str).join(" ") + "\n";
-    }
-    return txt;
-  }
-
-  if (file.name.endsWith(".docx") || file.name.endsWith(".doc")) {
-    const buf = await file.arrayBuffer();
-    const mammoth = await import("https://unpkg.com/mammoth@1.6.0/build/mammoth.browser.min.js");
-    const result = await mammoth.extractRawText({ arrayBuffer: buf });
-    return result.value;
-  }
-
-  throw new Error("不支持此格式");
-}
-
-async function getToken() {
-  const r = await fetch("https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + API_KEY + "&client_secret=" + SECRET_KEY);
-  const d = await r.json();
-  return d.access_token;
-}
-
-async function analyzeContract(text) {
-  const token = await getToken();
-  const prompt = `
-请对合同进行完整审查，严格按4部分输出：
-
-【1】合同智能解析
-甲方、乙方、金额、日期、有效期、付款方式
-
-【2】财务自动对账
-应收金额、付款节点、发票风险、财务隐患
-
-【3】法务风险审查
-不公平条款、违约责任、争议解决、缺失条款
-
-【4】修改建议与优化
-具体修改意见 + 优化示例
-
-合同内容：
-${text.slice(0, 8000)}
-`;
-
-  const res = await fetch("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed?access_token=" + token, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages: [{ role: "user", content: prompt }], temperature: 0.1 })
-  });
-
-  const data = await res.json();
-  resultText.innerText = data.result || "分析失败";
-}
 </script>
 </body>
 </html>
