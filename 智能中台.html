@@ -19,31 +19,26 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
 .nav-menu a:hover{color:#4fc3f7}
 .container{max-width:1200px;margin:0 auto;padding:100px 24px 60px}
 .page-title{font-size:28px;text-align:center;margin-bottom:40px;background:linear-gradient(90deg,#4fc3f7,#ffd54f);-webkit-background-clip:text;color:transparent}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:40px}
-.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;transition:all .3s;cursor:pointer}
-.card:hover{transform:translateY(-4px);border-color:rgba(79,195,247,.5);background:rgba(255,255,255,.07)}
-.card-icon{font-size:24px;margin-bottom:12px}
-.card-title{font-size:16px;font-weight:600;margin-bottom:8px;color:#fff}
-.card-desc{font-size:13px;color:#aaa}
-.upload-area{background:rgba(255,255,255,.05);border:2px dashed #4fc3f7;border-radius:16px;padding:40px 20px;text-align:center;transition:all .3s;margin-bottom:30px}
-.upload-area:hover{background:rgba(79,195,247,.1);border-color:#66d9ff}
-#fileInput{display:none}
-.upload-text{font-size:16px;color:#aaa}
-.result-section{background:rgba(255,255,255,.05);border-radius:16px;padding:24px;display:none}
-.result-title{font-size:18px;margin-bottom:16px;color:#4fc3f7}
-.result-content{line-height:1.8;color:#eee;white-space:pre-wrap;font-size:14px}
-.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#4fc3f7;animation:spin .8s linear infinite;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:24px;margin-bottom:40px}
+.card{background:rgba(20,26,53,.6);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:24px;transition:all .3s}
+.card:hover{border-color:rgba(79,195,247,.4);transform:translateY(-4px)}
+.card-title{font-size:18px;margin-bottom:16px;color:#4fc3f7}
+.analysis-section{background:rgba(20,26,53,.6);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:32px;margin-top:40px}
+.analysis-title{font-size:20px;margin-bottom:24px;color:#ffd54f}
+.file-input{margin-bottom:20px}
+.file-input input{color:#eaefff}
+.analyze-btn{background:linear-gradient(90deg,#4fc3f7,#0288d1);color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:16px;transition:all .3s}
+.analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(79,195,247,.3)}
+.result-area{margin-top:24px;padding:20px;background:rgba(10,14,26,.8);border-radius:8px;min-height:200px;white-space:pre-wrap;line-height:1.6}
 </style>
 </head>
 <body>
-
 <div class="bg-gradient"></div>
 <div class="grid-lines"></div>
 <div class="light-effect"></div>
 <div class="light-effect2"></div>
 
-<div class="navbar">
+<nav class="navbar">
   <div class="nav-container">
     <div class="logo">合同财务智能中台</div>
     <div class="nav-menu">
@@ -52,132 +47,65 @@ body{background:#0a0e1a;color:#eaefff;min-height:100vh}
       联系我
     </div>
   </div>
-</div>
+</nav>
 
 <div class="container">
-  <h1 class="page-title">智能中台</h1>
-
+  <h1 class="page-title">智能中台 - AI合同分析</h1>
+  
   <div class="card-grid">
-    <div class="card" onclick="triggerUpload()">
-      <div class="card-icon">📄</div>
-      <div class="card-title">1. 上传合同并解析</div>
-      <div class="card-desc">支持 PDF / Word / TXT，自动提取文本</div>
+    <div class="card">
+      <h3 class="card-title">📄 合同智能解析</h3>
+      <p>自动提取合同关键条款、金额、期限等信息，生成结构化分析报告。</p >
     </div>
     <div class="card">
-      <div class="card-icon">🔍</div>
-      <div class="card-title">2. 合同智能解析</div>
-      <div class="card-desc">甲方、乙方、金额、日期自动提取</div>
+      <h3 class="card-title">⚖️ 风险智能识别</h3>
+      <p>基于千帆大模型，智能识别合同中的法律风险、财务风险和履约风险。</p >
     </div>
     <div class="card">
-      <div class="card-icon">💰</div>
-      <div class="card-title">3. 财务自动对账</div>
-      <div class="card-desc">金额、发票、风险一键分析</div>
-    </div>
-    <div class="card">
-      <div class="card-icon">⚠️</div>
-      <div class="card-title">4. 法务风险审查</div>
-      <div class="card-desc">条款风险 + 修改建议</div>
+      <h3 class="card-title">📊 财务智能预测</h3>
+      <p>分析合同现金流、成本收益，提供智能财务预测和决策支持。</p >
     </div>
   </div>
 
-  <div class="upload-area" onclick="triggerUpload()">
-    <input type="file" id="fileInput" accept=".txt,.pdf,.docx">
-    <div class="upload-text">✅ 点击上传合同（TXT / PDF / DOCX）</div>
-  </div>
-
-  <div class="result-section" id="resultBox">
-    <div class="result-title">AI 合同审查结果</div>
-    <div class="result-content" id="resultText"></div>
+  <div class="analysis-section">
+    <h2 class="analysis-title">开始AI合同分析</h2>
+    <div class="file-input">
+      <input type="file" id="contractFile" accept=".txt,.docx">
+    </div>
+    <button class="analyze-btn" onclick="analyzeContract()">开始AI分析</button>
+    <div id="analysisResult" class="result-area">请上传合同文件并点击分析按钮...</div>
   </div>
 </div>
 
 <script>
-const API_KEY     = "ALTAKsJVt9XKhuSyHM9uzqeEXv";
-const SECRET_KEY  = "677e2573191347d0b3c62cdcd1af0141";
+async function analyzeContract() {
+  const file = document.getElementById('contractFile').files[0];
+  if (!file) {
+    alert('请先选择合同文件！');
+    return;
+  }
 
-const fileInput = document.getElementById("fileInput");
-const resultBox = document.getElementById("resultBox");
-const resultText = document.getElementById("resultText");
+  const resultDiv = document.getElementById('analysisResult');
+  resultDiv.innerText = '正在调用千帆AI分析，请稍候...';
 
-function triggerUpload() {
-  fileInput.click();
-}
-
-fileInput.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  resultBox.style.display = "block";
-  resultText.innerHTML = '<span class="loading"></span> 正在读取：' + file.name;
+  const formData = new FormData();
+  formData.append('file', file);
 
   try {
-    const text = await readFile(file);
-    resultText.innerHTML = '<span class="loading"></span> 正在 AI 分析...';
-    const aiResult = await callAI(text);
-    resultText.innerText = aiResult;
-  } catch (err) {
-    resultText.innerText = "❌ 错误：" + err.message;
-  }
-});
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
 
-async function readFile(file) {
-  if (file.name.endsWith(".txt")) {
-    return await file.text();
-  }
-
-  if (file.name.endsWith(".pdf")) {
-    const pdf = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs");
-    pdf.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs";
-    const buf = await file.arrayBuffer();
-    const doc = await pdf.getDocument({ data: new Uint8Array(buf) }).promise;
-    let txt = "";
-    for (let i = 1; i <= doc.numPages; i++) {
-      const page = await doc.getPage(i);
-      const content = await page.getTextContent();
-      txt += content.items.map(p => p.str).join(" ") + "\n";
+    if (data.ok) {
+      resultDiv.innerText = `✅ AI分析完成：\n\n${data.data.aiAnalysis}`;
+    } else {
+      resultDiv.innerText = `❌ 分析失败：${data.msg}`;
     }
-    return txt;
+  } catch (err) {
+    resultDiv.innerText = `❌ 网络错误：${err.message}`;
   }
-
-  if (file.name.endsWith(".docx")) {
-    const mammoth = await import("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/build/mammoth.browser.min.mjs");
-    const buf = await file.arrayBuffer();
-    const res = await mammoth.extractRawText({ arrayBuffer: buf });
-    return res.value;
-  }
-
-  throw new Error("仅支持 .txt .pdf .docx");
-}
-
-async function callAI(text) {
-  const tokenResp = await fetch("https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + API_KEY + "&client_secret=" + SECRET_KEY);
-  const tokenData = await tokenResp.json();
-  const token = tokenData.access_token;
-  if (!token) throw new Error("获取token失败");
-
-  const resp = await fetch("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions?access_token=" + token, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      messages: [{
-        role: "user",
-        content: `你是合同审查助手，严格按以下结构分析：
-【1】合同主体
-【2】金额与日期
-【3】财务风险
-【4】法律风险
-【5】修改建议
-
-合同内容：
-${text.slice(0, 6000)}`
-      }],
-      stream: false
-    })
-  });
-
-  const data = await resp.json();
-  if (data.error_code) throw new Error(data.error_msg || "AI调用失败");
-  return data.result;
 }
 </script>
 </body>
