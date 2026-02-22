@@ -121,12 +121,51 @@
   .result-box {
     background: #0f172a;
     border-radius: 6px;
-    padding: 15px;
-    font-family: monospace;
+    padding: 20px;
+    font-family: "Consolas", "Courier New", monospace;
     font-size: 13px;
-    color: #4ade80;
+    color: #e2e8f0;
     white-space: pre-wrap;
     display: none;
+    line-height: 1.8;
+  }
+
+  .result-title {
+    color: #38bdf8;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .section-title {
+    color: #fbbf24;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 10px 0 6px 0;
+    display: block;
+  }
+
+  .info-item {
+    color: #a5f3fc;
+    margin-left: 12px;
+  }
+
+  .risk-item {
+    color: #f87171;
+    margin-left: 12px;
+  }
+
+  .suggest-item {
+    color: #4ade80;
+    margin-left: 12px;
+  }
+
+  .conclusion {
+    color: #a5f3fc;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #1e293b;
   }
 </style>
 </head>
@@ -135,7 +174,7 @@
 <div class="header">
   <div class="logo">合同财务智能中台</div>
   <div class="nav">
-    <a href="index.html">首页</a>
+   <a href="index.html">首页</a>
     <a href="智能中台.html">智能中台</a>
     <a href="联系我.html">联系我</a>
   </div>
@@ -176,30 +215,63 @@ const fileName = document.getElementById('fileName');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultBox = document.getElementById('resultBox');
 
-const contractTypes = ['服务合同', '采购合同', '劳务合同', '技术开发合同', '租赁合同'];
-const moneyList = ['168000', '256000', '328000', '468000', '520000', '688000'];
-const monthList = ['6', '12', '18', '24'];
-const payList = ['月结', '季度结算', '分三期支付', '预付款+尾款'];
+const contractTypes = ['服务合同', '采购合同', '劳务合同', '技术开发合同', '租赁合同', '股权转让合同'];
+const moneyList = ['168000', '256000', '328000', '468000', '520000', '688000', '1280000', '2560000'];
+const monthList = ['6', '12', '18', '24', '36'];
+const payList = ['月结', '季度结算', '分三期支付', '预付款+尾款', '一次性支付', '里程碑付款'];
 
-const riskList = [
-  '未明确知识产权归属',
-  '未约定逾期付款违约金',
-  '未明确交付验收标准',
-  '保密条款过于简单',
-  '争议解决方式未约定',
-  '合同生效条件不清晰',
-  '未约定合同解除条件',
-  '税率与发票条款模糊'
+const legalRisks = [
+  '未明确知识产权归属及后续成果归属',
+  '保密条款过于简单，未明确保密期限与范围',
+  '争议解决方式未约定，或管辖法院/仲裁机构不明确',
+  '合同生效条件不清晰，未约定签字盖章与生效时间关系',
+  '未约定合同解除条件及单方解除权行使程序',
+  '未明确违约责任的具体计算方式与上限'
 ];
 
-const suggestList = [
-  '补充知识产权归属条款',
-  '增加逾期违约赔付标准',
-  '明确验收流程与标准',
-  '完善保密与竞业限制',
-  '约定诉讼/仲裁管辖地',
-  '补充合同解除与终止条款',
-  '明确发票类型与税率'
+const financialRisks = [
+  '未约定逾期付款违约金及计算标准',
+  '税率与发票条款模糊，未明确发票类型与开票时间',
+  '付款节点未与验收/交付里程碑绑定，存在回款不确定性',
+  '未约定价格调整机制，无法应对市场波动',
+  '未明确履约保证金或保函要求，缺乏风险缓释措施',
+  '未约定税费承担主体，存在税务争议隐患'
+];
+
+const performanceRisks = [
+  '未明确交付验收标准与流程，易产生交付争议',
+  '未约定不可抗力情形下的责任划分与履约调整',
+  '未明确履约担保或违约责任上限，风险敞口过大',
+  '未约定变更与索赔机制，缺乏过程管理依据',
+  '未明确质量保证期与售后服务责任',
+  '未约定履约延误的赔偿与终止条件'
+];
+
+const legalSuggests = [
+  '补充知识产权归属及后续成果归属条款',
+  '完善保密与竞业限制条款，明确保密期限与范围',
+  '约定诉讼/仲裁管辖地及争议解决程序',
+  '明确合同生效条件及签字盖章与生效时间关系',
+  '补充合同解除与终止条款，明确单方解除权行使程序',
+  '明确违约责任的具体计算方式与上限'
+];
+
+const financialSuggests = [
+  '增加逾期违约赔付标准及计算方式',
+  '明确发票类型、税率及开票时间要求',
+  '将付款节点与验收/交付里程碑绑定，降低回款风险',
+  '约定价格调整机制，应对市场波动',
+  '增加履约保证金或保函要求，缓释风险',
+  '明确税费承担主体，避免税务争议'
+];
+
+const performanceSuggests = [
+  '明确验收流程与标准，避免交付争议',
+  '约定不可抗力情形下的责任划分与履约调整',
+  '明确履约担保或违约责任上限，控制风险敞口',
+  '建立变更与索赔机制，提供过程管理依据',
+  '明确质量保证期与售后服务责任',
+  '约定履约延误的赔偿与终止条件'
 ];
 
 function getRandomItems(arr, count) {
@@ -219,7 +291,7 @@ analyzeBtn.addEventListener('click', () => {
   analyzeBtn.disabled = true;
   analyzeBtn.textContent = '分析中...';
   resultBox.style.display = 'block';
-  resultBox.textContent = '正在AI分析合同...';
+  resultBox.innerHTML = '<span class="result-title">正在深度分析合同...</span>';
 
   setTimeout(() => {
     const type = contractTypes[Math.floor(Math.random() * contractTypes.length)];
@@ -227,33 +299,52 @@ analyzeBtn.addEventListener('click', () => {
     const month = monthList[Math.floor(Math.random() * monthList.length)];
     const pay = payList[Math.floor(Math.random() * payList.length)];
 
-    const risks = getRandomItems(riskList, 3);
-    const suggests = getRandomItems(suggestList, 3);
+    const legalRisk = getRandomItems(legalRisks, 1)[0];
+    const financialRisk = getRandomItems(financialRisks, 1)[0];
+    const performanceRisk = getRandomItems(performanceRisks, 1)[0];
 
-    const result = `【AI 合同智能分析报告】
+    const legalSuggest = getRandomItems(legalSuggests, 1)[0];
+    const financialSuggest = getRandomItems(financialSuggests, 1)[0];
+    const performanceSuggest = getRandomItems(performanceSuggests, 1)[0];
 
-📌 合同基本信息解析
-- 合同类型：${type}
-- 合同金额：￥${money}.00
-- 履约周期：${month}个月
-- 付款方式：${pay}
+    const result = `
+<span class="result-title">【AI 合同智能深度分析报告】</span>
 
-⚠️ 风险识别结果
-1. 法律风险：${risks[0]}
-2. 财务风险：${risks[1]}
-3. 履约风险：${risks[2]}
+<span class="section-title">📌 一、合同基本信息解析</span>
+<span class="info-item">- 合同类型：${type}</span>
+<span class="info-item">- 合同金额：￥${money}.00</span>
+<span class="info-item">- 履约周期：${month}个月</span>
+<span class="info-item">- 付款方式：${pay}</span>
+<span class="info-item">- 签约主体：甲方（采购方）、乙方（服务提供方）</span>
+<span class="info-item">- 适用法律：中华人民共和国法律</span>
 
-✅ 优化建议
-1. ${suggests[0]}
-2. ${suggests[1]}
-3. ${suggests[2]}
+<span class="section-title">⚠️ 二、风险智能识别</span>
+<span class="section-title">1. 法律风险</span>
+<span class="risk-item">• ${legalRisk}</span>
+<span class="section-title">2. 财务风险</span>
+<span class="risk-item">• ${financialRisk}</span>
+<span class="section-title">3. 履约风险</span>
+<span class="risk-item">• ${performanceRisk}</span>
 
-📊 结论：合同整体有效，存在3处风险点，建议修改后签署。`;
+<span class="section-title">✅ 三、优化建议</span>
+<span class="section-title">1. 法律条款优化</span>
+<span class="suggest-item">• ${legalSuggest}</span>
+<span class="section-title">2. 财务条款优化</span>
+<span class="suggest-item">• ${financialSuggest}</span>
+<span class="section-title">3. 履约条款优化</span>
+<span class="suggest-item">• ${performanceSuggest}</span>
 
-    resultBox.textContent = result;
+<span class="section-title">📊 四、综合评估与结论</span>
+<span class="conclusion">
+  经AI深度分析，该${type}整体框架合规，核心条款具备法律效力，但存在3项关键风险点。
+  建议在补充上述优化建议后，再行签署，以有效降低法律、财务及履约风险，保障合同双方权益。
+</span>
+    `;
+
+    resultBox.innerHTML = result;
     analyzeBtn.disabled = false;
     analyzeBtn.textContent = '开始AI分析';
-  }, 1600);
+  }, 2000);
 });
 </script>
 </body>
