@@ -39,7 +39,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background-
         <span id="status" class="text-sm"></span>
         <label class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer text-sm transition">
             <i class="fa fa-upload"></i>上传合同
-            <input type="file" id="file" accept=".txt,.docx" class="hidden">
+            <input type="file" id="fileInput" accept=".txt,.docx" class="hidden">
         </label>
     </div>
 </header>
@@ -105,25 +105,30 @@ let data = {
 
 const $ = id => document.getElementById(id);
 
-$("#file").addEventListener("change", async function(e) {
-  const f = e.target.files[0];
-  if (!f) return;
+// 确保DOM加载完成后再绑定事件
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', async function(e) {
+      const f = e.target.files[0];
+      if (!f) return;
 
-  $("#fname").innerText = f.name;
-  $("#status").innerText = "⏳ 解析中...";
-  $("#status").className = "text-sm text-blue-400";
-  uploaded = false;
+      $("#fname").innerText = f.name;
+      $("#status").innerText = "⏳ 解析中...";
+      $("#status").className = "text-sm text-blue-400";
+      uploaded = false;
 
-  try {
-    // 模拟解析过程
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    $("#status").innerText = "✅ 解析成功";
-    $("#status").className = "text-sm text-green-400";
-    uploaded = true;
-  } catch (err) {
-    $("#status").innerText = "❌ 解析失败";
-    $("#status").className = "text-sm text-red-400";
-    uploaded = false;
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        $("#status").innerText = "✅ 解析成功";
+        $("#status").className = "text-sm text-green-400";
+        uploaded = true;
+      } catch (err) {
+        $("#status").innerText = "❌ 解析失败";
+        $("#status").className = "text-sm text-red-400";
+        uploaded = false;
+      }
+    });
   }
 });
 
