@@ -5,15 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>合同财务智能中台</title>
 <style>
-/* 全局重置与基础样式 */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: "Microsoft Yahei", sans-serif;
 }
-
-/* 科技感线条背景 */
 body {
     background-color: #0f172a;
     color: #e2e8f0;
@@ -22,10 +19,7 @@ body {
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
     background-size: 30px 30px;
-    position: relative;
 }
-
-/* 导航栏样式 */
 header {
     padding: 16px 24px;
     background-color: rgba(15, 23, 42, 0.8);
@@ -36,7 +30,6 @@ header {
     gap: 16px;
     align-items: center;
 }
-
 @media (min-width: 768px) {
     header {
         flex-direction: row;
@@ -44,14 +37,11 @@ header {
         align-items: center;
     }
 }
-
-/* 标题区域 */
 .header-title {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
 .header-title h1 {
     font-size: 20px;
     background: linear-gradient(90deg, #38bdf8, #0ea5e9);
@@ -60,34 +50,27 @@ header {
     color: transparent;
     font-weight: bold;
 }
-
 .header-title .icon {
     font-size: 20px;
     color: #38bdf8;
 }
-
-/* 导航菜单 */
 .nav-menu {
     display: flex;
     gap: 24px;
     font-size: 14px;
 }
-
 .nav-item {
     color: #94a3b8;
     text-decoration: none;
     position: relative;
     transition: color 0.3s;
 }
-
 .nav-item.active {
     color: #38bdf8;
 }
-
 .nav-item:hover {
     color: #38bdf8;
 }
-
 .nav-item::after {
     content: "";
     position: absolute;
@@ -98,40 +81,30 @@ header {
     background: linear-gradient(90deg, #38bdf8, #0ea5e9);
     transition: width 0.3s;
 }
-
 .nav-item:hover::after {
     width: 100%;
 }
-
-/* 上传区域 */
 .upload-area {
     display: flex;
     align-items: center;
     gap: 12px;
     font-size: 14px;
 }
-
 .file-name {
     color: #94a3b8;
 }
-
 .status-text {
     font-size: 12px;
 }
-
 .status-loading {
     color: #38bdf8;
 }
-
 .status-success {
     color: #10b981;
 }
-
 .status-error {
     color: #ef4444;
 }
-
-/* 上传按钮 */
 .upload-btn {
     background-color: #0ea5e9;
     color: white;
@@ -144,54 +117,41 @@ header {
     gap: 6px;
     transition: background-color 0.3s;
 }
-
 .upload-btn:hover {
     background-color: #0284c7;
 }
-
 #fileInput {
     display: none;
 }
-
-/* 主内容区域 */
 main {
     max-width: 1200px;
     margin: 0 auto;
     padding: 32px 24px;
 }
-
-/* 仪表盘标题 */
 .dashboard-title {
     text-align: center;
     margin-bottom: 32px;
 }
-
 .dashboard-title h2 {
     font-size: 28px;
     color: #38bdf8;
     margin-bottom: 8px;
 }
-
 .dashboard-title p {
     color: #94a3b8;
     font-size: 14px;
 }
-
-/* 卡片网格 */
 .card-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
 }
-
 @media (min-width: 768px) {
     .card-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 20px;
     }
 }
-
-/* 科技感卡片 */
 .tech-card {
     background-color: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(56, 189, 248, 0.2);
@@ -202,7 +162,6 @@ main {
     overflow: hidden;
     transition: all 0.3s ease;
 }
-
 .tech-card::before {
     content: "";
     position: absolute;
@@ -213,26 +172,21 @@ main {
     background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.1), transparent);
     animation: lightMove 3s infinite linear;
 }
-
 @keyframes lightMove {
     0% { left: -100%; }
     100% { left: 100%; }
 }
-
 .tech-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
     border-color: rgba(56, 189, 248, 0.5);
 }
-
-/* 卡片内容 */
 .card-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
 }
-
 .card-icon {
     width: 40px;
     height: 40px;
@@ -242,38 +196,30 @@ main {
     justify-content: center;
     font-size: 18px;
 }
-
 .icon-primary {
     background-color: rgba(56, 189, 248, 0.1);
     color: #38bdf8;
 }
-
 .icon-warning {
     background-color: rgba(234, 179, 8, 0.1);
     color: #facc15;
 }
-
 .icon-success {
     background-color: rgba(16, 185, 129, 0.1);
     color: #10b981;
 }
-
 .card-header h3 {
     font-size: 16px;
     font-weight: bold;
     color: #e2e8f0;
 }
-
 .card-desc {
     font-size: 12px;
     color: #94a3b8;
 }
-
-/* 详情页样式 */
 .detail-page {
     display: none;
 }
-
 .back-btn {
     background: none;
     border: none;
@@ -285,14 +231,12 @@ main {
     cursor: pointer;
     margin-bottom: 16px;
 }
-
 .detail-card {
     background-color: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(56, 189, 248, 0.2);
     border-radius: 12px;
     padding: 24px;
 }
-
 .detail-title {
     font-size: 20px;
     background: linear-gradient(90deg, #38bdf8, #0ea5e9);
@@ -302,40 +246,33 @@ main {
     font-weight: bold;
     margin-bottom: 20px;
 }
-
-/* 解析结果样式 */
 .parse-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 12px;
 }
-
 @media (min-width: 768px) {
     .parse-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
-
 .info-item {
     background-color: rgba(15, 23, 42, 0.5);
     padding: 12px;
     border-radius: 8px;
     font-size: 14px;
 }
-
 .ledger-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
-
 .risk-box, .three-box {
     background-color: rgba(15, 23, 42, 0.5);
     padding: 16px;
     border-radius: 8px;
     font-size: 14px;
 }
-
 .three-success {
     background-color: rgba(16, 185, 129, 0.1);
     color: #10b981;
@@ -348,19 +285,16 @@ main {
 </style>
 </head>
 <body>
-<!-- 导航栏 -->
 <header>
     <div class="header-title">
         <span class="icon">📄</span>
         <h1>合同财务智能中台</h1>
     </div>
-
     <nav class="nav-menu">
         首页
         智能中台
         联系我
     </nav>
-
     <div class="upload-area">
         <span id="fileName" class="file-name">未上传合同</span>
         <span id="status" class="status-text"></span>
@@ -370,16 +304,12 @@ main {
         </label>
     </div>
 </header>
-
-<!-- 主内容 -->
 <main>
-    <!-- 仪表盘页面 -->
     <div id="dashboard" class="dashboard-page">
         <div class="dashboard-title">
             <h2>合同全流程智能分析</h2>
             <p>AI 解析 · 财务台账 · 风险审查 · 三流合一</p >
         </div>
-
         <div class="card-grid">
             <div onclick="goToPage('parse')" class="tech-card">
                 <div class="card-header">
@@ -388,7 +318,6 @@ main {
                 </div>
                 <p class="card-desc">提取甲乙方、金额、税率、日期、违约条款等关键信息</p >
             </div>
-
             <div onclick="goToPage('ledger')" class="tech-card">
                 <div class="card-header">
                     <div class="card-icon icon-primary">🧮</div>
@@ -396,7 +325,6 @@ main {
                 </div>
                 <p class="card-desc">自动计算税额、预付款、进度款、尾款，生成标准台账</p >
             </div>
-
             <div onclick="goToPage('risk')" class="tech-card">
                 <div class="card-header">
                     <div class="card-icon icon-warning">⚠️</div>
@@ -404,7 +332,6 @@ main {
                 </div>
                 <p class="card-desc">识别霸王条款、权责不对等、高风险约定等法律陷阱</p >
             </div>
-
             <div onclick="goToPage('three')" class="tech-card">
                 <div class="card-header">
                     <div class="card-icon icon-success">✅</div>
@@ -414,18 +341,13 @@ main {
             </div>
         </div>
     </div>
-
-    <!-- 详情页面 -->
     <div id="detailPage" class="detail-page">
         <button onclick="goBack()" class="back-btn">← 返回仪表盘</button>
         <div id="detailContent" class="detail-card"></div>
     </div>
 </main>
-
 <script>
-// 核心变量
 let isUploaded = false;
-// 预设测试合同数据（确保演示稳定）
 const contractData = {
     partyA: "西安未来信息科技有限公司",
     partyB: "福州星辰商务服务有限公司",
@@ -436,86 +358,64 @@ const contractData = {
     contractTerm: "2026年3月1日 至 2026年9月1日",
     breachClause: "支付合同总金额10%的违约金"
 };
-
-// DOM元素获取（确保页面加载完成）
 let fileInput, fileName, status, dashboard, detailPage, detailContent;
-
-// 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
-    // 绑定所有DOM元素
     fileInput = document.getElementById('fileInput');
     fileName = document.getElementById('fileName');
     status = document.getElementById('status');
     dashboard = document.getElementById('dashboard');
     detailPage = document.getElementById('detailPage');
     detailContent = document.getElementById('detailContent');
-
-    // 绑定上传事件（双重校验，防止元素为空）
     if (fileInput) {
         fileInput.addEventListener('change', handleFileUpload);
     }
-
-    // 消除控制台警告（可选）
     console.clear();
 });
-
-// 处理文件上传
 function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) {
         resetUploadStatus();
         return;
     }
-
-    // 重置状态，显示解析中
-    fileName.textContent = file.name;
-    status.textContent = "⏳ 解析中...";
-    status.className = "status-text status-loading";
+    if (fileName) fileName.textContent = file.name;
+    if (status) {
+        status.textContent = "⏳ 解析中...";
+        status.className = "status-text status-loading";
+    }
     isUploaded = false;
-
-    // 模拟解析过程（模拟真实耗时，演示更真实）
     setTimeout(() => {
-        // 无论文件类型，都解析成功（演示优先）
-        status.textContent = "✅ 解析成功";
-        status.className = "status-text status-success";
+        if (status) {
+            status.textContent = "✅ 解析成功";
+            status.className = "status-text status-success";
+        }
         isUploaded = true;
     }, 1200);
 }
-
-// 重置上传状态
 function resetUploadStatus() {
-    fileName.textContent = "未上传合同";
-    status.textContent = "";
-    status.className = "status-text";
+    if (fileName) fileName.textContent = "未上传合同";
+    if (status) {
+        status.textContent = "";
+        status.className = "status-text";
+    }
     isUploaded = false;
 }
-
-// 页面跳转
 function goToPage(pageType) {
     if (!isUploaded) {
         alert("请先上传合同并等待解析完成！");
         return;
     }
-
-    // 隐藏仪表盘，显示详情页
-    dashboard.style.display = "none";
-    detailPage.style.display = "block";
-
-    // 渲染对应页面内容
+    if (dashboard) dashboard.style.display = "none";
+    if (detailPage) detailPage.style.display = "block";
     renderDetailContent(pageType);
 }
-
-// 返回仪表盘
 function goBack() {
-    detailPage.style.display = "none";
-    dashboard.style.display = "block";
+    if (detailPage) detailPage.style.display = "none";
+    if (dashboard) dashboard.style.display = "block";
 }
-
-// 渲染详情内容
 function renderDetailContent(pageType) {
+    if (!detailContent) return;
     const data = contractData;
     let html = "";
-
     switch (pageType) {
         case "parse":
             html = `
@@ -532,7 +432,6 @@ function renderDetailContent(pageType) {
                 </div>
             `;
             break;
-
         case "ledger":
             const tax = (data.amount * data.taxRate / 100).toFixed(2);
             const prepay = (data.amount * 0.3).toFixed(2);
@@ -548,7 +447,6 @@ function renderDetailContent(pageType) {
                 </div>
             `;
             break;
-
         case "risk":
             html = `
                 <h3 class="detail-title">法务风险审查结果</h3>
@@ -562,7 +460,6 @@ function renderDetailContent(pageType) {
                 </div>
             `;
             break;
-
         case "three":
             html = `
                 <h3 class="detail-title">三流合一校验结果</h3>
@@ -575,7 +472,6 @@ function renderDetailContent(pageType) {
             `;
             break;
     }
-
     detailContent.innerHTML = html;
 }
 </script>
