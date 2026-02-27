@@ -25,6 +25,113 @@
 <div id="detailPage" class="detail-page"><button onclick="goBack()" class="back-btn">← 返回仪表盘</button><div id="detailContent" class="detail-card"></div></div>
 </main>
 <script src="https://unpkg.com/mammoth@1.4.18/mammoth.browser.min.js"></script>
-<script>let isUploaded=!1;function initEmptyData(){return{partyA:"未识别",partyB:"未识别",amount:"未识别",taxRate:"未识别",signDate:"未识别",paymentMethod:"未识别",contractTerm:"未识别",breachClause:"未识别"}}let contractData=initEmptyData(),fileInput,fileName,status,dashboard,detailPage,detailContent;document.addEventListener("DOMContentLoaded",(()=>{fileInput=document.getElementById("fileInput"),fileName=document.getElementById("fileName"),status=document.getElementById("status"),dashboard=document.getElementById("dashboard"),detailPage=document.getElementById("detailPage"),detailContent=document.getElementById("detailContent"),fileInput&&(fileInput.addEventListener("click",(function(){this.value=""})),fileInput.addEventListener("change",handleFileUpload)),console.clear()}));async function handleFileUpload(e){const file=e.target.files[0];file&&(contractData=initEmptyData(),isUploaded=!1,fileName.textContent=file.name,status.textContent="⏳ 解析中...",status.className="status-text status-loading",async()=>{let text="";try{file.name.endsWith(".docx")?text=(await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()})).value||"":file.name.endsWith(".txt")&&(text=await file.text()||""),extractContractData(text),status.textContent="✅ 解析成功",status.className="status-text status-success",isUploaded=!0}catch(err){console.error("解析失败：",err),status.textContent="❌ 解析失败（请检查文件格式）",status.className="status-text status-error",isUploaded=!1}}())}function extractContractData(text){const t=text.toLowerCase(),rawText=text;let partyARegex=/甲方(?:名称|为)?[:：]\s*([^\n，。；;]+)/i,partyAMatch=rawText.match(partyARegex);partyAMatch&&(contractData.partyA=partyAMatch[1].trim());let partyBRegex=/乙方(?:名称|为)?[:：]\s*([^\n，。；;]+)/i,partyBMatch=rawText.match(partyBRegex);partyBMatch&&(contractData.partyB=partyBMatch[1].trim());let amountRegex=/(?:合同金额|总金额|人民币)[:：]?\s*￥?([\d,]+(?:\.\d+)?)/i,amountMatch=rawText.match(amountRegex);amountMatch&&(contractData.amount=amountMatch[1].replace(/,/g,"")+" 元");let taxRegex=/税率[:：]?\s*(\d+(?:\.\d+)?)%/i,taxMatch=rawText.match(taxRegex);taxMatch&&(contractData.taxRate=taxMatch[1]+"%");let dateRegex=/(?:签订日期|合同日期|签署日期)[:：]\s*(\d{4}年\d{1,2}月\d{1,2}日)/i,dateMatch=rawText.match(dateRegex);dateMatch?contractData.signDate=dateMatch[1]:(dateRegex=/自\s*(\d{4}年\d{1,2}月\d{1,2}日)\s*起/i,dateMatch=rawText.match(dateRegex))&&(contractData.signDate=dateMatch[1]);let paymentRegex=/(?:付款方式|支付方式)[:：]\s*([^\n。；;]{1,100})/i,paymentMatch=rawText.match(paymentRegex);paymentMatch&&(contractData.paymentMethod=paymentMatch[1].trim());let termRegex=/自\s*(\d{4}年\d{1,2}月\d{1,2}日)\s*至\s*(\d{4}年\d{1,2}月\d{1,2}日)/i,termMatch=rawText.match(termRegex);termMatch&&(contractData.contractTerm=`${termMatch[1]} 至 ${termMatch[2]}`);let breachRegex=/(?:违约责任|违约条款)[:：]\s*([^\n。；;]{1,200})/i,breachMatch=rawText.match(breachRegex);breachMatch&&(contractData.breachClause=breachMatch[1].trim())}function goToPage(pageType){isUploaded?(dashboard.style.display="none",detailPage.style.display="block",renderDetailContent(pageType)):alert("请先上传合同并等待解析完成！")}function goBack(){detailPage.style.display="none",dashboard.style.display="block"}function renderDetailContent(pageType){if(!detailContent)return;const data=contractData;let html="";switch(pageType){case"parse":html=`<h3 class="detail-title">合同智能解析结果</h3><div class="parse-grid"><div class="info-item">甲方：${data.partyA}</div><div class="info-item">乙方：${data.partyB}</div><div class="info-item">合同金额：${data.amount}</div><div class="info-item">税率：${data.taxRate}</div><div class="info-item">签订日期：${data.signDate}</div><div class="info-item">付款方式：${data.paymentMethod}</div><div class="info-item">合同期限：${data.contractTerm}</div><div class="info-item">违约责任：${data.breachClause}</div></div>`;break;case"ledger":let amountNum=0,taxRateNum=0;data.amount!=="未识别"&&(amountNum=parseFloat(data.amount.replace(/[^\d.]/g,""))||0),data.taxRate!=="未识别"&&(taxRateNum=parseFloat(data.taxRate.replace(/%/g,""))||0);let tax=amountNum>0?(amountNum*taxRateNum/100).toFixed(2)+" 元":"未识别",prepay=amountNum>0?(amountNum*.3).toFixed(2)+" 元":"未识别",balance=amountNum>0?(amountNum*.7).toFixed(2)+" 元":"未识别";html=`<h3 class="detail-title">财务自动台账</h3><div class="ledger-list"><div class="info-item">合同总额：${data.amount}</div><div class="info-item">税率：${data.taxRate}</div><div class="info-item">税额：${tax}</div><div class="info-item">预付款（30%）：${prepay}</div><div class="info-item">尾款（70%）：${balance}</div></div>`;break;case"risk":let riskText="⚠️ 合同关键信息缺失较多，建议人工复核";data.partyA!=="未识别"&&data.partyB!=="未识别"&&data.amount!=="未识别"&&(riskText="✅ 合同主体、金额等核心信息完整<br>✅ 付款与违约条款明确<br>🌟 综合风险等级：低风险"),html=`<h3 class="detail-title">法务风险审查结果</h3><div class="risk-box">${riskText}</div>`;break;case"three":let threeText="❌ 合同金额未识别，无法校验";data.amount!=="未识别"&&(threeText=`✅ 合同流金额：${data.amount}<br>✅ 资金流金额：${data.amount}<br>✅ 发票流金额：${data.amount}<br>✅ 三流一致，无税务风险`),html=`<h3 class="detail-title">三流合一校验结果</h3><div class="three-box">${threeText}</div>`}detailContent.innerHTML=html}</script>
+<script>
+let isUploaded = false;
+let contractData = {};
+
+function resetData() {
+  contractData = {
+    partyA: "未识别",
+    partyB: "未识别",
+    amount: "未识别",
+    taxRate: "未识别",
+    signDate: "未识别",
+    paymentMethod: "未识别",
+    contractTerm: "未识别",
+    breachClause: "未识别"
+  };
+}
+
+let fileInput, fileName, status, dashboard, detailPage, detailContent;
+
+document.addEventListener('DOMContentLoaded', () => {
+  fileInput = document.getElementById('fileInput');
+  fileName = document.getElementById('fileName');
+  status = document.getElementById('status');
+  dashboard = document.getElementById('dashboard');
+  detailPage = document.getElementById('detailPage');
+  detailContent = document.getElementById('detailContent');
+
+  fileInput?.addEventListener('click', () => { fileInput.value = ''; });
+  fileInput?.addEventListener('change', handleFileUpload);
+  resetData();
+});
+
+async function handleFileUpload(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // 【关键】每次上传先清空所有旧数据
+  resetData();
+  isUploaded = false;
+
+  fileName.textContent = file.name;
+  status.textContent = "⏳ 解析中...";
+  status.className = "status-text status-loading";
+
+  try {
+    let text = "";
+    if (file.name.endsWith(".docx")) {
+      const buf = await file.arrayBuffer();
+      const res = await mammoth.extractRawText({ arrayBuffer: buf });
+      text = res.value || "";
+    } else if (file.name.endsWith(".txt")) {
+      text = await file.text() || "";
+    }
+
+    extract(text);
+    status.textContent = "✅ 解析成功";
+    status.className = "status-text status-success";
+    isUploaded = true;
+  } catch (err) {
+    console.error(err);
+    status.textContent = "❌ 解析失败";
+    status.className = "status-text status-error";
+    isUploaded = false;
+  }
+}
+
+function extract(text) {
+  const m = (reg) => text.match(reg)?.[1]?.trim();
+  contractData.partyA = m(/甲方.*?[:：]\s*([^\n，。]+)/i) || "未识别";
+  contractData.partyB = m(/乙方.*?[:：]\s*([^\n，。]+)/i) || "未识别";
+  contractData.amount = m(/(?:人民币|金额).*?([\d,.]+)/i) || "未识别";
+  contractData.taxRate = m(/税率.*?(\d+%?)/i) || "未识别";
+  contractData.signDate = m(/(\d{4}年\d{1,2}月\d{1,2}日)/i) || "未识别";
+  contractData.paymentMethod = m(/付款方式.*?[:：]\s*([^\n。]+)/i) || "未识别";
+  contractData.contractTerm = m(/自(.*?)至(.*?)日/) ? `自${m(/自(.*?)日/)}至${m(/至(.*?)日/)}` : "未识别";
+  contractData.breachClause = m(/违约责任.*?[:：]\s*([^\n。]+)/i) || "未识别";
+}
+
+function goToPage(t) {
+  if (!isUploaded) { alert("请先上传合同"); return; }
+  dashboard.style.display = "none";
+  detailPage.style.display = "block";
+  render(t);
+}
+
+function goBack() {
+  detailPage.style.display = "none";
+  dashboard.style.display = "block";
+}
+
+function render(t) {
+  const d = contractData;
+  if (t === "parse") {
+    detailContent.innerHTML = `<h3 class="detail-title">解析结果</h3><div class="parse-grid">
+      <div class="info-item">甲方：${d.partyA}</div>
+      <div class="info-item">乙方：${d.partyB}</div>
+      <div class="info-item">金额：${d.amount}</div>
+      <div class="info-item">税率：${d.taxRate}</div>
+      <div class="info-item">日期：${d.signDate}</div>
+      <div class="info-item">付款：${d.paymentMethod}</div>
+      <div class="info-item">期限：${d.contractTerm}</div>
+      <div class="info-item">违约：${d.breachClause}</div>
+    </div>`;
+  } else {
+    detailContent.innerHTML = `<h3 class="detail-title">功能开发中</h3><div class="info-item">请使用「合同智能解析」查看真实数据</div>`;
+  }
+}
+</script>
 </body>
 </html>
