@@ -115,7 +115,8 @@ $("#file").addEventListener("change", async function(e) {
   uploaded = false;
 
   try {
-    await new Promise(r => setTimeout(r, 800));
+    // 模拟解析过程
+    await new Promise(resolve => setTimeout(resolve, 1000));
     $("#status").innerText = "✅ 解析成功";
     $("#status").className = "text-sm text-green-400";
     uploaded = true;
